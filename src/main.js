@@ -2,11 +2,7 @@ import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
 import { searchImage } from './js/pixabay-api.js';
-import {
-  addImages,
-  clearGallery,
-  imageGalleryLightbox,
-} from './js/render-functions.js';
+import { addImages, clearGallery, lightbox } from './js/render-functions.js';
 
 const form = document.querySelector('.image-search-form');
 const loader = document.querySelector('.loading-indicator');
@@ -14,6 +10,7 @@ const loadMoreBtn = document.querySelector('.load-more-btn');
 
 let currentPage = 1;
 let currentQuery = '';
+let totalPages = 0;
 
 loadMoreBtn.style.display = 'none';
 
@@ -38,6 +35,7 @@ form.addEventListener('submit', async event => {
 
   try {
     const data = await searchImage(currentQuery, currentPage);
+    totalPages = Math.ceil(data.totalHits / 15);
     if (!data.hits.length) {
       iziToast.error({
         message: `Sorry, there are no images matching your search query. Please try again!`,
@@ -48,8 +46,8 @@ form.addEventListener('submit', async event => {
     } else {
       setTimeout(() => {
         addImages(data.hits);
-        imageGalleryLightbox();
-        loadMoreBtn.style.display = data.totalHits > 15 ? 'block' : 'none';
+        lightbox.refresh();
+        loadMoreBtn.style.display = currentPage < totalPages ? 'block' : 'none';
       }, 2000);
     }
   } catch (error) {
@@ -71,7 +69,7 @@ loadMoreBtn.addEventListener('click', async () => {
 
   try {
     const data = await searchImage(currentQuery, currentPage);
-    if (!data.hits.length) {
+    if (!data.hits.length || currentPage > totalPages) {
       loadMoreBtn.style.display = 'none';
       iziToast.info({
         message: "We're sorry, but you've reached the end of search results.",
@@ -81,7 +79,16 @@ loadMoreBtn.addEventListener('click', async () => {
       });
     } else {
       addImages(data.hits);
-      imageGalleryLightbox();
+      lightbox.refresh();
+      if (currentPage >= totalPages) {
+        loadMoreBtn.style.display = 'none';
+        iziToast.show({
+          message: "We're sorry, but you've reached the end of search results.",
+          messageColor: '#FAFAFB',
+          color: '#17A2B8',
+          position: 'topRight',
+        });
+      }
     }
   } catch (error) {
     iziToast.error({

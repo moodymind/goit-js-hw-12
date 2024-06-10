@@ -3,6 +3,13 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const gallery = document.querySelector('.gallery');
 
+export let lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+  overlay: true,
+  overlayOpacity: 0.8,
+});
+
 export function addImages(images) {
   const imageMarkup = images
     .map(image => {
@@ -33,14 +40,4 @@ export function addImages(images) {
 
 export function clearGallery() {
   gallery.innerHTML = '';
-}
-
-export function imageGalleryLightbox() {
-  let lightbox = new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionDelay: 250,
-    overlay: true,
-    overlayOpacity: 0.8,
-  });
-  lightbox.refresh();
 }
